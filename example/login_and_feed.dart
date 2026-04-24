@@ -3,8 +3,26 @@ import 'package:cyberspace_client/cyberspace_client.dart';
 const _email = 'YOUR_EMAIL';
 const _password = 'YOUR_PASSWORD';
 
+class MyTokenProvider implements AuthTokenProvider {
+  String? _idToken;
+
+  @override
+  Future<String?> getToken() async => _idToken;
+
+  @override
+  Future<void> onUnauthorized() async {
+    print('Unauthorized! Clearing token.');
+    _idToken = null;
+  }
+
+  void setIdToken(String idToken) {
+    _idToken = idToken;
+  }
+}
+
 Future<void> main() async {
-  final client = CyberspaceClient();
+  final tokenProvider = MyTokenProvider();
+  final client = CyberspaceClient(authTokenProvider: tokenProvider);
 
   print('Logging in as $_email...');
   final tokens = await client.login(email: _email, password: _password);
@@ -32,5 +50,5 @@ Future<void> main() async {
     print('More posts available (cursor: ${feed.cursor})');
   }
 
-  client.dispose();
+  client.dispose(); */
 }
