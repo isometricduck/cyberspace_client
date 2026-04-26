@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:http/http.dart' as http;
 
@@ -12,7 +14,6 @@ import 'resources/notes_resource.dart';
 import 'resources/notifications_resource.dart';
 import 'resources/posts_resource.dart';
 import 'resources/replies_resource.dart';
-import 'resources/resource.dart';
 import 'resources/settings_resource.dart';
 import 'resources/topics_resource.dart';
 import 'resources/users_resource.dart';
@@ -117,39 +118,138 @@ class CyberspaceClient {
     if (requiresAuth) {
       final token = await authTokenProvider.getToken();
       if (token == null) {
-        throw StateError('Not authenticated — call auth.login() or setToken() first');
+        throw StateError(
+          'Not authenticated — call auth.login() or setToken() first',
+        );
       }
       headers['Authorization'] = 'Bearer $token';
     }
 
     final encodedBody = body != null ? jsonEncode(body) : null;
 
-    late http.Response response;
-    switch (method) {
-      case 'GET':
-        response = await _http.get(uri, headers: headers);
-      case 'POST':
-        response = await _http.post(uri, headers: headers, body: encodedBody);
-      case 'PATCH':
-        response = await _http.patch(uri, headers: headers, body: encodedBody);
-      case 'DELETE':
-        response = await _http.delete(uri, headers: headers);
-      default:
-        throw ArgumentError('Unsupported HTTP method: $method');
+    var response = await _sendRequest(method, uri, headers, encodedBody);
+
+    if (requiresAuth && response.statusCode == 401) {
+      final refreshToken = await authTokenProvider.getRefreshToken();
+      if (refreshToken != null) {
+        try {
+          final refreshed = await auth.refreshToken(refreshToken);
+          await authTokenProvider.onTokensRefreshed(refreshed);
+
+          final token = await authTokenProvider.getToken();
+          if (token != null) {
+            headers['Authorization'] = 'Bearer $token';
+            response = await _sendRequest(method, uri, headers, encodedBody);
+          }
+        } catch (_) {
+          await authTokenProvider.onUnauthorized();
+        }
+      } else {
+        await authTokenProvider.onUnauthorized();
+      }
     }
 
-    final decoded = jsonDecode(response.body) as Map<String, dynamic>;
+    final decoded = _decodeResponse(response);
 
     if (response.statusCode >= 400) {
-      final error = decoded['error'] as Map<String, dynamic>;
+      if (requiresAuth && response.statusCode == 401) {
+        await authTokenProvider.onUnauthorized();
+      }
+
+      final error = _readError(response, decoded);
       throw CyberspaceApiException(
-        code: error['code'] as String,
-        message: error['message'] as String,
+        code: error.code,
+        message: error.message,
         statusCode: response.statusCode,
       );
     }
 
     return decoded;
+  }
+
+  Future<http.Response> _sendRequest(
+    String method,
+    Uri uri,
+    Map<String, String> headers,
+    String? encodedBody,
+  ) async {
+    try {
+      switch (method) {
+        case 'GET':
+          return await _http.get(uri, headers: headers);
+        case 'POST':
+          return await _http.post(uri, headers: headers, body: encodedBody);
+        case 'PATCH':
+          return await _http.patch(uri, headers: headers, body: encodedBody);
+        case 'DELETE':
+          return await _http.delete(uri, headers: headers);
+        default:
+          throw ArgumentError('Unsupported HTTP method: $method');
+      }
+    } on CyberspaceClientException {
+      rethrow;
+    } on SocketException catch (error) {
+      throw CyberspaceNetworkException(
+        message: 'Could not connect to the Cyberspace API.',
+        cause: error,
+      );
+    } on http.ClientException catch (error) {
+      throw CyberspaceNetworkException(
+        message: 'The Cyberspace API request failed.',
+        cause: error,
+      );
+    } on IOException catch (error) {
+      throw CyberspaceNetworkException(
+        message: 'The Cyberspace API connection failed.',
+        cause: error,
+      );
+    } on TimeoutException catch (error) {
+      throw CyberspaceNetworkException(
+        message: 'The Cyberspace API request timed out.',
+        cause: error,
+      );
+    }
+  }
+
+  Map<String, dynamic> _decodeResponse(http.Response response) {
+    try {
+      final decoded = jsonDecode(response.body);
+      if (decoded is Map<String, dynamic>) {
+        return decoded;
+      }
+
+      throw CyberspaceResponseException(
+        message: 'Expected the Cyberspace API response to be a JSON object.',
+        statusCode: response.statusCode,
+      );
+    } on CyberspaceClientException {
+      rethrow;
+    } on FormatException catch (error) {
+      throw CyberspaceResponseException(
+        message: 'The Cyberspace API returned invalid JSON.',
+        statusCode: response.statusCode,
+        cause: error,
+      );
+    }
+  }
+
+  ({String code, String message}) _readError(
+    http.Response response,
+    Map<String, dynamic> decoded,
+  ) {
+    final error = decoded['error'];
+    if (error is Map<String, dynamic>) {
+      final code = error['code'];
+      final message = error['message'];
+      if (code is String && message is String) {
+        return (code: code, message: message);
+      }
+    }
+
+    throw CyberspaceResponseException(
+      message: 'The Cyberspace API returned a malformed error response.',
+      statusCode: response.statusCode,
+    );
   }
 
   // ─── Auth shortcuts ─────────────────────────────────────────────────────────
@@ -161,8 +261,7 @@ class CyberspaceClient {
     required String email,
     required String password,
     required String username,
-  }) =>
-      auth.register(email: email, password: password, username: username);
+  }) => auth.register(email: email, password: password, username: username);
 
   Future<RefreshedTokens> refreshToken(String refreshToken) =>
       auth.refreshToken(refreshToken);

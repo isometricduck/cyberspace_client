@@ -5,18 +5,29 @@ const _password = 'YOUR_PASSWORD';
 
 class MyTokenProvider implements AuthTokenProvider {
   String? _idToken;
+  String? _refreshToken;
 
   @override
   Future<String?> getToken() async => _idToken;
 
   @override
+  Future<String?> getRefreshToken() async => _refreshToken;
+
+  @override
+  Future<void> onTokensRefreshed(RefreshedTokens tokens) async {
+    _idToken = tokens.idToken;
+  }
+
+  @override
   Future<void> onUnauthorized() async {
     print('Unauthorized! Clearing token.');
     _idToken = null;
+    _refreshToken = null;
   }
 
-  void setIdToken(String idToken) {
-    _idToken = idToken;
+  void setTokens(AuthTokens tokens) {
+    _idToken = tokens.idToken;
+    _refreshToken = tokens.refreshToken;
   }
 }
 
@@ -26,13 +37,14 @@ Future<void> main() async {
 
   print('Logging in as $_email...');
   final tokens = await client.login(email: _email, password: _password);
+  tokenProvider.setTokens(tokens);
   print('Logged in. idToken: ${tokens.idToken.substring(0, 20)}...');
 
-  final me = await client.getMe();
+  final me = await client.users.getMe();
   print('Hello, ${me.username}!');
 
   print('\nFetching feed...');
-  final feed = await client.listPosts(limit: 10);
+  final feed = await client.posts.list(limit: 10);
   print('Got ${feed.data.length} posts:\n');
 
   for (final post in feed.data) {
@@ -50,5 +62,5 @@ Future<void> main() async {
     print('More posts available (cursor: ${feed.cursor})');
   }
 
-  client.dispose(); */
+  client.dispose();
 }
