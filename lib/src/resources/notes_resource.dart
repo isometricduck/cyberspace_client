@@ -41,14 +41,15 @@ class NotesResource {
     required String content,
     List<String>? topics,
   }) async {
-    final data = await _request(
+    final response = await _request(
       'POST',
       '/v1/notes',
       body: {
         'content': content,
-        if (topics != null) 'topics': topics,
+        'topics': ?topics,
       },
     ) as Map<String, dynamic>;
+    final data = response['data'] as Map<String, dynamic>;
     return data['noteId'] as String;
   }
 

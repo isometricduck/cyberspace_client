@@ -27,16 +27,17 @@ class PostsResource {
     bool isPublic = false,
     bool isNSFW = false,
   }) async {
-    final data = await _request(
+    final response = await _request(
       'POST',
       '/v1/posts',
       body: {
         'content': content,
-        if (topics != null) 'topics': topics,
+        'topics': ?topics,
         'isPublic': isPublic,
         'isNSFW': isNSFW,
       },
     ) as Map<String, dynamic>;
+    final data = response['data'] as Map<String, dynamic>;
     return data['postId'] as String;
   }
 
