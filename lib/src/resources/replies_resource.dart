@@ -30,15 +30,16 @@ class RepliesResource {
     required String content,
     String? parentReplyId,
   }) async {
-    final data = await _request(
+    final response = await _request(
       'POST',
       '/v1/replies',
       body: {
         'postId': postId,
         'content': content,
-        if (parentReplyId != null) 'parentReplyId': parentReplyId,
+        'parentReplyId': ?parentReplyId,
       },
     ) as Map<String, dynamic>;
+    final data = response['data'] as Map<String, dynamic>;
     return data['replyId'] as String;
   }
 

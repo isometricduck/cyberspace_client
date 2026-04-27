@@ -72,12 +72,13 @@ class AuthResource {
 
   Future<({bool available, String? reason})> checkUsername(
       String username) async {
-    final data = await _request(
+    final response = await _request(
       'POST',
       '/v1/auth/check-username',
       body: {'username': username},
       requiresAuth: false,
     ) as Map<String, dynamic>;
+    final data = response['data'] as Map<String, dynamic>;
     return (
       available: data['available'] as bool,
       reason: data['reason'] as String?,

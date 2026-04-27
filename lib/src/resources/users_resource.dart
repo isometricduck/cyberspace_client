@@ -9,14 +9,16 @@ class UsersResource {
   UsersResource(this._request);
 
   Future<UserProfile> getMe() async {
-    final data =
+    final response =
         await _request('GET', '/v1/users/me') as Map<String, dynamic>;
+    final data = response['data'] as Map<String, dynamic>;
     return UserProfile.fromJson(data['data']);
   }
 
   Future<UserProfile> get(String username) async {
-    final data = await _request('GET', '/v1/users/$username')
+    final response = await _request('GET', '/v1/users/$username')
         as Map<String, dynamic>;
+    final data = response['data'] as Map<String, dynamic>;
     return UserProfile.fromJson(data['data']);
   }
 

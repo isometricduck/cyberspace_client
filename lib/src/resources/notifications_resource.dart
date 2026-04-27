@@ -23,8 +23,9 @@ class NotificationsResource {
   }
 
   Future<int> markAllRead() async {
-    final data = await _request('POST', '/v1/notifications/read-all')
+    final response = await _request('POST', '/v1/notifications/read-all')
         as Map<String, dynamic>;
+    final data = response['data'] as Map<String, dynamic>;
     return data['updated'] as int;
   }
 }

@@ -43,11 +43,12 @@ class FollowsResource {
   }
 
   Future<String> follow(String followedId) async {
-    final data = await _request(
+    final response = await _request(
       'POST',
       '/v1/follows',
       body: {'followedId': followedId},
     ) as Map<String, dynamic>;
+    final data = response['data'] as Map<String, dynamic>;
     return data['followId'] as String;
   }
 
