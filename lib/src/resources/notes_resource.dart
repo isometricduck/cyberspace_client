@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 import '../models.dart';
 import 'resource.dart';
 
@@ -7,11 +9,13 @@ class NotesResource {
   NotesResource(this._request);
 
   Future<PagedResult<Note>> list({int limit = 20, String? cursor}) async {
+    debugPrint('Fetching notes');
     final raw = await _request(
       'GET',
       '/v1/notes',
       queryParams: {'limit': limit.toString(), 'cursor': cursor},
     ) as Map<String, dynamic>;
+    debugPrint('Notes: $raw');
     return parsePaged(raw, Note.fromJson);
   }
 

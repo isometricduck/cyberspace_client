@@ -17,11 +17,11 @@ class Note {
 
   factory Note.fromJson(Map<String, dynamic> json) => Note(
         noteId: json['noteId'] as String,
-        content: json['content'] as String,
+        content: (json['content'] as String?) ?? '',
         topics: json['topics'] != null
             ? (json['topics'] as List).cast<String>()
             : [],
-        revision: json['revision'] as int,
+        revision: (json['revision'] as int?) ?? 0,
         createdAt: json['createdAt'] != null
             ? DateTime.parse(json['createdAt'] as String)
             : null,
