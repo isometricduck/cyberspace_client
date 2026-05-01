@@ -7,9 +7,9 @@ class SettingsResource {
   SettingsResource(this._request);
 
   Future<Settings> get() async {
-    final data =
+    final response =
         await _request('GET', '/v1/settings') as Map<String, dynamic>;
-    return Settings.fromJson(data);
+    return Settings.fromJson(responseDataObject(response));
   }
 
   Future<void> update({
@@ -32,21 +32,21 @@ class SettingsResource {
   }) async {
     final body = <String, dynamic>{
       if (notifications != null) 'notifications': notifications.toJson(),
-      if (filterNSFW != null) 'filterNSFW': filterNSFW,
-      if (showFollowerCount != null) 'showFollowerCount': showFollowerCount,
-      if (hideImagesInFeed != null) 'hideImagesInFeed': hideImagesInFeed,
-      if (hideAudioInFeed != null) 'hideAudioInFeed': hideAudioInFeed,
-      if (autoWatchOnReply != null) 'autoWatchOnReply': autoWatchOnReply,
-      if (keyboardBindings != null) 'keyboardBindings': keyboardBindings,
-      if (keyboardPreset != null) 'keyboardPreset': keyboardPreset,
-      if (mutedUsersByRoom != null) 'mutedUsersByRoom': mutedUsersByRoom,
-      if (iconTheme != null) 'iconTheme': iconTheme,
-      if (followedTopics != null) 'followedTopics': followedTopics,
-      if (mutedTopics != null) 'mutedTopics': mutedTopics,
-      if (imagePixelSize != null) 'imagePixelSize': imagePixelSize,
-      if (timeDisplayFormat != null) 'timeDisplayFormat': timeDisplayFormat,
-      if (useLegacyMenuOrder != null) 'useLegacyMenuOrder': useLegacyMenuOrder,
-      if (defaultPublicPost != null) 'defaultPublicPost': defaultPublicPost,
+      'filterNSFW': ?filterNSFW,
+      'showFollowerCount': ?showFollowerCount,
+      'hideImagesInFeed': ?hideImagesInFeed,
+      'hideAudioInFeed': ?hideAudioInFeed,
+      'autoWatchOnReply': ?autoWatchOnReply,
+      'keyboardBindings': ?keyboardBindings,
+      'keyboardPreset': ?keyboardPreset,
+      'mutedUsersByRoom': ?mutedUsersByRoom,
+      'iconTheme': ?iconTheme,
+      'followedTopics': ?followedTopics,
+      'mutedTopics': ?mutedTopics,
+      'imagePixelSize': ?imagePixelSize,
+      'timeDisplayFormat': ?timeDisplayFormat,
+      'useLegacyMenuOrder': ?useLegacyMenuOrder,
+      'defaultPublicPost': ?defaultPublicPost,
     };
     await _request('PATCH', '/v1/settings', body: body);
   }

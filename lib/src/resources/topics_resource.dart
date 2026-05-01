@@ -7,8 +7,9 @@ class TopicsResource {
   TopicsResource(this._request);
 
   Future<List<Topic>> list() async {
-    final data = await _request('GET', '/v1/topics') as List;
-    return data.cast<Map<String, dynamic>>().map(Topic.fromJson).toList();
+    final response =
+        await _request('GET', '/v1/topics') as Map<String, dynamic>;
+    return responseDataList(response).map(Topic.fromJson).toList();
   }
 
   Future<PagedResult<Post>> listPosts(
@@ -16,11 +17,13 @@ class TopicsResource {
     int limit = 20,
     String? cursor,
   }) async {
-    final raw = await _request(
-      'GET',
-      '/v1/topics/$slug/posts',
-      queryParams: {'limit': limit.toString(), 'cursor': cursor},
-    ) as Map<String, dynamic>;
+    final raw =
+        await _request(
+              'GET',
+              '/v1/topics/$slug/posts',
+              queryParams: {'limit': limit.toString(), 'cursor': cursor},
+            )
+            as Map<String, dynamic>;
     return parsePaged(raw, Post.fromJson);
   }
 }

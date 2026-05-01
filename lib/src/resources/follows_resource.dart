@@ -11,16 +11,18 @@ class FollowsResource {
     int limit = 20,
     String? cursor,
   }) async {
-    final raw = await _request(
-      'GET',
-      '/v1/follows',
-      queryParams: {
-        'type': 'followers',
-        if (userId != null) 'userId': userId,
-        'limit': limit.toString(),
-        'cursor': cursor,
-      },
-    ) as Map<String, dynamic>;
+    final raw =
+        await _request(
+              'GET',
+              '/v1/follows',
+              queryParams: {
+                'type': 'followers',
+                'userId': ?userId,
+                'limit': limit.toString(),
+                'cursor': cursor,
+              },
+            )
+            as Map<String, dynamic>;
     return parsePaged(raw, Follow.fromJson);
   }
 
@@ -29,26 +31,26 @@ class FollowsResource {
     int limit = 20,
     String? cursor,
   }) async {
-    final raw = await _request(
-      'GET',
-      '/v1/follows',
-      queryParams: {
-        'type': 'following',
-        if (userId != null) 'userId': userId,
-        'limit': limit.toString(),
-        'cursor': cursor,
-      },
-    ) as Map<String, dynamic>;
+    final raw =
+        await _request(
+              'GET',
+              '/v1/follows',
+              queryParams: {
+                'type': 'following',
+                'userId': ?userId,
+                'limit': limit.toString(),
+                'cursor': cursor,
+              },
+            )
+            as Map<String, dynamic>;
     return parsePaged(raw, Follow.fromJson);
   }
 
   Future<String> follow(String followedId) async {
-    final response = await _request(
-      'POST',
-      '/v1/follows',
-      body: {'followedId': followedId},
-    ) as Map<String, dynamic>;
-    final data = response['data'] as Map<String, dynamic>;
+    final response =
+        await _request('POST', '/v1/follows', body: {'followedId': followedId})
+            as Map<String, dynamic>;
+    final data = responseDataObject(response);
     return data['followId'] as String;
   }
 

@@ -1,11 +1,13 @@
 class Topic {
-  final String slug;
-  final int postCount;
+  final String topicId;
+  final String name;
+  final int postsCount;
 
-  const Topic({required this.slug, required this.postCount});
+  const Topic({required this.topicId, required this.name, required this.postsCount});
 
   factory Topic.fromJson(Map<String, dynamic> json) => Topic(
-        slug: json['slug'] as String,
-        postCount: (json['postCount'] as num).toInt(),
+        topicId: json['topicId'] as String,
+        name: json['name'] as String,
+        postsCount: (json['postsCount'] as num).toInt(),
       );
 }

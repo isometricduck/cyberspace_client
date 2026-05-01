@@ -11,15 +11,13 @@ class UsersResource {
   Future<UserProfile> getMe() async {
     final response =
         await _request('GET', '/v1/users/me') as Map<String, dynamic>;
-    final data = response['data'] as Map<String, dynamic>;
-    return UserProfile.fromJson(data['data']);
+    return UserProfile.fromJson(responseDataObject(response));
   }
 
   Future<UserProfile> get(String username) async {
-    final response = await _request('GET', '/v1/users/$username')
-        as Map<String, dynamic>;
-    final data = response['data'] as Map<String, dynamic>;
-    return UserProfile.fromJson(data['data']);
+    final response =
+        await _request('GET', '/v1/users/$username') as Map<String, dynamic>;
+    return UserProfile.fromJson(responseDataObject(response));
   }
 
   Future<PagedResult<Post>> listPosts(
@@ -27,11 +25,13 @@ class UsersResource {
     int limit = 20,
     String? cursor,
   }) async {
-    final raw = await _request(
-      'GET',
-      '/v1/users/$username/posts',
-      queryParams: {'limit': limit.toString(), 'cursor': cursor},
-    ) as Map<String, dynamic>;
+    final raw =
+        await _request(
+              'GET',
+              '/v1/users/$username/posts',
+              queryParams: {'limit': limit.toString(), 'cursor': cursor},
+            )
+            as Map<String, dynamic>;
     return parsePaged(raw, Post.fromJson);
   }
 
@@ -40,11 +40,13 @@ class UsersResource {
     int limit = 20,
     String? cursor,
   }) async {
-    final raw = await _request(
-      'GET',
-      '/v1/users/$username/replies',
-      queryParams: {'limit': limit.toString(), 'cursor': cursor},
-    ) as Map<String, dynamic>;
+    final raw =
+        await _request(
+              'GET',
+              '/v1/users/$username/replies',
+              queryParams: {'limit': limit.toString(), 'cursor': cursor},
+            )
+            as Map<String, dynamic>;
     return parsePaged(raw, Reply.fromJson);
   }
 

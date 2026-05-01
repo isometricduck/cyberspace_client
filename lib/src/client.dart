@@ -141,11 +141,31 @@ class CyberspaceClient {
             headers['Authorization'] = 'Bearer $token';
             response = await _sendRequest(method, uri, headers, encodedBody);
           }
-        } catch (_) {
+        } on CyberspaceApiException catch (e) {
+          if (e.statusCode != 401) rethrow;
+          // Refresh token rejected — log out and surface the original 401.
           await authTokenProvider.onUnauthorized();
+          final decoded = _decodeResponse(response);
+          final error = _readError(response, decoded);
+          throw CyberspaceApiException(
+            code: error.code,
+            message: error.message,
+            statusCode: response.statusCode,
+          );
+        } catch (_) {
+          // Network or response error from the refresh call — don't log out.
+          rethrow;
         }
       } else {
+        // No refresh token available.
         await authTokenProvider.onUnauthorized();
+        final decoded = _decodeResponse(response);
+        final error = _readError(response, decoded);
+        throw CyberspaceApiException(
+          code: error.code,
+          message: error.message,
+          statusCode: response.statusCode,
+        );
       }
     }
 

@@ -11,18 +11,20 @@ class RepliesResource {
     int limit = 20,
     String? cursor,
   }) async {
-    final raw = await _request(
-      'GET',
-      '/v1/posts/$postId/replies',
-      queryParams: {'limit': limit.toString(), 'cursor': cursor},
-    ) as Map<String, dynamic>;
+    final raw =
+        await _request(
+              'GET',
+              '/v1/posts/$postId/replies',
+              queryParams: {'limit': limit.toString(), 'cursor': cursor},
+            )
+            as Map<String, dynamic>;
     return parsePaged(raw, Reply.fromJson);
   }
 
   Future<Reply> get(String replyId) async {
-    final data = await _request('GET', '/v1/replies/$replyId')
-        as Map<String, dynamic>;
-    return Reply.fromJson(data);
+    final response =
+        await _request('GET', '/v1/replies/$replyId') as Map<String, dynamic>;
+    return Reply.fromJson(responseDataObject(response));
   }
 
   Future<String> create({
@@ -30,16 +32,18 @@ class RepliesResource {
     required String content,
     String? parentReplyId,
   }) async {
-    final response = await _request(
-      'POST',
-      '/v1/replies',
-      body: {
-        'postId': postId,
-        'content': content,
-        'parentReplyId': ?parentReplyId,
-      },
-    ) as Map<String, dynamic>;
-    final data = response['data'] as Map<String, dynamic>;
+    final response =
+        await _request(
+              'POST',
+              '/v1/replies',
+              body: {
+                'postId': postId,
+                'content': content,
+                'parentReplyId': ?parentReplyId,
+              },
+            )
+            as Map<String, dynamic>;
+    final data = responseDataObject(response);
     return data['replyId'] as String;
   }
 

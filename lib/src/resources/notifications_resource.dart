@@ -10,11 +10,13 @@ class NotificationsResource {
     int limit = 20,
     String? cursor,
   }) async {
-    final raw = await _request(
-      'GET',
-      '/v1/notifications',
-      queryParams: {'limit': limit.toString(), 'cursor': cursor},
-    ) as Map<String, dynamic>;
+    final raw =
+        await _request(
+              'GET',
+              '/v1/notifications',
+              queryParams: {'limit': limit.toString(), 'cursor': cursor},
+            )
+            as Map<String, dynamic>;
     return parsePaged(raw, Notification.fromJson);
   }
 
@@ -23,9 +25,10 @@ class NotificationsResource {
   }
 
   Future<int> markAllRead() async {
-    final response = await _request('POST', '/v1/notifications/read-all')
-        as Map<String, dynamic>;
-    final data = response['data'] as Map<String, dynamic>;
+    final response =
+        await _request('POST', '/v1/notifications/read-all')
+            as Map<String, dynamic>;
+    final data = responseDataObject(response);
     return data['updated'] as int;
   }
 }
