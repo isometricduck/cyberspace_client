@@ -9,6 +9,8 @@ class Post {
   final bool isPublic;
   final bool isNSFW;
   final List<dynamic> attachments;
+  final bool hasAudioAttachment;
+  final String audioAttachmentGenre;
   final DateTime createdAt;
   final bool deleted;
 
@@ -23,6 +25,8 @@ class Post {
     required this.isPublic,
     required this.isNSFW,
     required this.attachments,
+    required this.hasAudioAttachment,
+    required this.audioAttachmentGenre,
     required this.createdAt,
     required this.deleted,
   });
@@ -38,6 +42,8 @@ class Post {
         isPublic: (json['isPublic'] as bool?) ?? true,
         isNSFW: (json['isNSFW'] as bool?) ?? false,
         attachments: (json['attachments'] as List?) ?? [],
+        hasAudioAttachment: (json['hasAudioAttachment'] as bool?) ?? false,
+        audioAttachmentGenre: (json['audioAttachmentGenre'] as String?) ?? '',
         createdAt: json['createdAt'] != null
             ? DateTime.parse(json['createdAt'] as String)
             : DateTime.fromMillisecondsSinceEpoch(0),
